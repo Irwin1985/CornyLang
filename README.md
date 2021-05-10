@@ -1,7 +1,7 @@
 # CornyLang
 `CornyLang` is an expressive programming language built from scrach using a [Top Down Parser](https://en.wikipedia.org/wiki/Top-down_parsing) algorithm. In this repository I will host all implementation of `CornyLang` in every programming language I learn.
 
-`CornyLang` is a derivated flavor from [MonkeyLang](https://interpreterbook.com/)
+`CornyLang` is a derivated flavor from [MonkeyLang](https://interpreterbook.com/). It's called so after my rabbit `Corny`, they are curious, fast and intelligent pets.
 
 `CornyLang` has the following features:
 
