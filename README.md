@@ -1,5 +1,5 @@
 # CornyLang
-`CornyLang` is an expressive programming language built from scrach using a Top Down Parser algorithm. In this repository I will host all implementation of `CornyLang` in every programming language I learn.
+`CornyLang` is an expressive programming language built from scrach using a Top [!https://interpreterbook.com/]Down Parser algorithm. In this repository I will host all implementation of `CornyLang` in every programming language I learn.
 
 `CornyLang` has the following features:
 
