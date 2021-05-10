@@ -1,5 +1,7 @@
 # CornyLang
-`CornyLang` is an expressive programming language built from scrach using a [Top Down Parser](https://interpreterbook.com/) algorithm. In this repository I will host all implementation of `CornyLang` in every programming language I learn.
+`CornyLang` is an expressive programming language built from scrach using a [Top Down Parser](https://en.wikipedia.org/wiki/Top-down_parsing) algorithm. In this repository I will host all implementation of `CornyLang` in every programming language I learn.
+
+`CornyLang` is a derivated flavor from [MonkeyLang](https://interpreterbook.com/)
 
 `CornyLang` has the following features:
 
@@ -133,7 +135,7 @@ If cases when your left side variable is repeated inmediately on the right side,
     ```
 
 ## First Class and High-order Functions (Inspired from Lisp)
-If you come from *imperative* languages like C then you must be familiar with function declaration which must be written somewhere in your code and then get called. `CornyLang` will not let you write static functions because they are `First Class Citizens` which means they are treated like any other variable that you can bind somewhere and take it with you.
+If you come from [*imperative*](https://en.wikipedia.org/wiki/Imperative_programming) languages like C then you must be familiar with function declaration which must be written somewhere in your code and then get called. `CornyLang` will not let you write static functions because they are [`First Class Citizens`](https://en.wikipedia.org/wiki/First-class_citizen) which means they are treated like any other variable that you can bind somewhere and take it with you.
 
 ```Javascript
 >>> let square = fn(a) { return a * a };
