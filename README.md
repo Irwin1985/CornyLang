@@ -142,7 +142,7 @@ If you come from [*imperative*](https://en.wikipedia.org/wiki/Imperative_program
 >>> square(5); // 25
 ```
 
-Functions in `CornyLang` are also in `High Order`. These are functions that take other functions as arguments. Please refer to the following example and take your time to understand it.
+Functions in `CornyLang` are also in [`High Order`](https://en.wikipedia.org/wiki/Higher-order_function). These are functions that take other functions as arguments. Please refer to the following example and take your time to understand it.
 
 ```Javascript
 >>> let square = fn(base) { return base * base };
@@ -153,7 +153,7 @@ Functions in `CornyLang` are also in `High Order`. These are functions that take
 The `cube()` function takes two arguments: the base and another function called `square()` who gets called inside of the function body. This is done because in `CornyLang` functions are just values like strings or booleans and that feature exists in `Functional Programming Languages` lile `Lisp` or `Haskell`.
 
 ## Closures (Inpired from List)
-`Closures` or `Lexical Scope` is another feature from `Functional Programming Languages` *(yep! I was inspired from functional programming languages)* that allow write a function inside another function.
+[`Closures`](https://en.wikipedia.org/wiki/Closure_(computer_programming)) or `Lexical Scope` is another feature from `Functional Programming Languages` *(yep! I was inspired from functional programming languages)* that allow write a function inside another function.
 
 Let's see another solution for the `cube()` function example. This time with `Closures`
 
