@@ -1,3 +1,4 @@
+```
           ,\
           \\\,_
            \` ,\
@@ -6,6 +7,7 @@
  ,_/   ,    \/\_
  \_|    )_-\ \_-`
     `-----` `--`
+```
 # CornyLang
 `CornyLang` is an expressive programming language built from scrach using a [Top Down Parser](https://en.wikipedia.org/wiki/Top-down_parsing) algorithm. In this repository I will host all implementation of `CornyLang` in every programming language I learn.
 
