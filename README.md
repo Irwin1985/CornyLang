@@ -39,6 +39,10 @@
 - No comment support
 - No iterator control flow (while, for, etc)
 
+## Implementations
+
+- Windev: this is the  first implementation of the language, I had a lot of fun coding in WLang because I sped a lot of time skimming the documentation website to write the code but I'm still having strages behaviour in runtime due to Windev's automatically memory management, hope fix this issue soon.
+
 ## C-like syntax
 
 ```Javascript
