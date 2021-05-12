@@ -73,7 +73,7 @@ namespace corny {
             advance(); // skip the '.'
             lexeme += getNumber();
         }
-        return Token(NUMBER, lexeme);
+        return Token(TT_NUMBER, lexeme);
     }
     // parseString
     Token Lexer::parseString(char delimiter) {
@@ -86,7 +86,7 @@ namespace corny {
         //checkEOF();
         advance(); // skip the closing delimiter
 
-        return Token(STRING, lexeme);
+        return Token(TT_STRING, lexeme);
     }
     // parseIdentifier
     Token Lexer::parseIdent() {
@@ -114,99 +114,99 @@ namespace corny {
             // Arithmetic operator
             if (current_char == '+') {
                 advance();
-                return Token(PLUS, '+');
+                return Token(TT_PLUS, '+');
             }
             if (current_char == '-') {
                 advance();
-                return Token(MINUS, '-');
+                return Token(TT_MINUS, '-');
             }
             if (current_char == '*') {
                 advance();
-                return Token(MUL, '*');
+                return Token(TT_MUL, '*');
             }
             if (current_char == '/') {
                 advance();
-                return Token(DIV, '/');
+                return Token(TT_DIV, '/');
             }
             if (current_char == '^') {
                 advance();
-                return Token(POW, '^');
+                return Token(TT_POW, '^');
             }
             // Relational operators
             if (current_char == '<') {
                 advance();
                 if (current_char == '=') {
                     advance();
-                    return Token(LESS_EQ, "<=");
+                    return Token(TT_LESS_EQ, "<=");
                 }
-                return Token(LESS, '<');
+                return Token(TT_LESS, '<');
             }
             if (current_char == '>') {
                 advance();
                 if (current_char == '=') {
                     advance();
-                    return Token(GREATER_EQ, ">=");
+                    return Token(TT_GREATER_EQ, ">=");
                 }
-                return Token(GREATER, '>');
+                return Token(TT_GREATER, '>');
             }
             if (current_char == '!') {
                 advance();
                 if (current_char == '=') {
                     advance();
-                    return Token(NOT_EQ, "!=");
+                    return Token(TT_NOT_EQ, "!=");
                 }
-                return Token(NOT, '!');
+                return Token(TT_NOT, '!');
             }
             if (current_char == '=') {
                 advance();
                 if (current_char == '=') {
                     advance();
-                    return Token(EQUAL, "==");
+                    return Token(TT_EQUAL, "==");
                 }
-                return Token(ASSIGN, '=');
+                return Token(TT_ASSIGN, '=');
             }
             // Special characters
             if (current_char == ',') {
                 advance();
-                return Token(COMMA, ',');
+                return Token(TT_COMMA, ',');
             }
             if (current_char == ':') {
                 advance();
-                return Token(COLON, ':');
+                return Token(TT_COLON, ':');
             }
             if (current_char == ';') {
                 advance();
-                return Token(SEMICOLON, ';');
+                return Token(TT_SEMICOLON, ';');
             }
             if (current_char == '{') {
                 advance();
-                return Token(LBRACE, '{');
+                return Token(TT_LBRACE, '{');
             }
             if (current_char == '}') {
                 advance();
-                return Token(RBRACE, '}');
+                return Token(TT_RBRACE, '}');
             }
             if (current_char == '[') {
                 advance();
-                return Token(LBRACKET, '[');
+                return Token(TT_LBRACKET, '[');
             }
             if (current_char == ']') {
                 advance();
-                return Token(RBRACKET, ']');
+                return Token(TT_RBRACKET, ']');
             }
             if (current_char == '(') {
                 advance();
-                return Token(LPAREN, '(');
+                return Token(TT_LPAREN, '(');
             }
             if (current_char == ')') {
                 advance();
-                return Token(RPAREN, ')');
+                return Token(TT_RPAREN, ')');
             }
 
             std::cout << "unknown character: " << current_char << std::endl;
             std::exit(1);
         }
-        return Token(END, "");
+        return Token(TT_EOF, "");
     }
 }
 

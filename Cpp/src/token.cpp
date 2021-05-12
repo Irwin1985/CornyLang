@@ -6,13 +6,18 @@
 
 namespace corny {
     std::map<std::string, TokenType> keywords ({
-        {"fn", FUNCTION},
-        {"let", LET},
+        {"fn",  TT_FUNCTION},
+        {"let", TT_LET},
+        {"true", TT_TRUE},
+        {"false", TT_FALSE},
+        {"return", TT_RETURN},
+        {"if", TT_IF},
+        {"else", TT_ELSE},
     });
     // isKeyword: check if 'ident' is a keyword or a ident token.
     TokenType isKeyword(std::string ident) {
         if (keywords.find(ident) == keywords.end()) {
-            return IDENT;
+            return TT_IDENT;
         }
         return keywords[ident];
     }
