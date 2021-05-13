@@ -8,7 +8,7 @@
 #include "object.h"
 
 namespace corny {
-    class ObjBase;
+    class Object;
     class Environment {
     public:
         Environment() {};
@@ -16,13 +16,13 @@ namespace corny {
             this->outer = outer;
         }
         Environment* outer = nullptr;
-        std::map<std::string, ObjBase*> symbolTable;
+        std::map<std::string, Object*> symbolTable;
         // register an object in symbol table.
-        void set(std::string key, ObjBase* value) {
+        void set(std::string key, Object* value) {
             symbolTable[key] = value;
         }
         // get an object from symbol table.
-        ObjBase* get(std::string key) {
+        Object* get(std::string key) {
             if (symbolTable.find(key) == symbolTable.end()) {
                 if (outer != nullptr) {
                     return outer->get(key);

@@ -18,19 +18,28 @@ namespace corny {
         BooleanObj *FALSE = new BooleanObj(false);
         NullObj *NIL = new NullObj();
 
-        static bool isError(ObjBase* obj);
-        ObjBase* eval(Node* node, Environment* env);
-        ObjBase* evalProgram(ProgramNode* programNode, Environment* env);
-        ObjBase* evalBlock(BlockNode* blockNode, Environment* env);
-        ObjBase* evalLet(LetNode* letNode, Environment* env);
-        ObjBase* evalReturn(ReturnNode* returnNode, Environment* env);
-        ObjBase* evalIdentifier(IdentNode* identNode, Environment* env);
-        ObjBase* evalCallExpr(CallExprNode* callExprNode, Environment* env);
-        ObjBase* evalFunctionLiteral(FunctionNode* functionNode, Environment* env);
-        ObjBase* evalFunction(FunctionObj* functionObj, std::vector<ObjBase*> arguments);
-        ObjBase* evalArrayAccess(ArrayObj* arrayObj, std::vector<ObjBase*> arguments);
-        ObjBase* evalHashAccess(HashObj* hashObj, std::vector<ObjBase*> arguments);
-        ObjBase* evalStringAccess(StringObj* stringObj, std::vector<ObjBase*> arguments);
+        static bool isError(Object* obj);
+        Object* eval(Node* node, Environment* env);
+        Object* evalProgram(ProgramNode* programNode, Environment* env);
+        Object* evalBlock(BlockNode* blockNode, Environment* env);
+        Object* evalLet(LetNode* letNode, Environment* env);
+        Object* evalReturn(ReturnNode* returnNode, Environment* env);
+        Object* evalIdentifier(IdentNode* identNode, Environment* env);
+        Object* evalCallExpr(CallExprNode* callExprNode, Environment* env);
+        Object* evalFunctionLiteral(FunctionNode* functionNode, Environment* env);
+        Object* evalFunction(FunctionObj* functionObj, std::vector<Object*> arguments);
+        Object* evalArrayAccess(ArrayObj* arrayObj, std::vector<Object*> arguments);
+        Object* evalHashAccess(HashObj* hashObj, std::vector<Object*> arguments);
+        Object* evalStringAccess(StringObj* stringObj, std::vector<Object*> arguments);
+        Object* evalArrayLiteral(ArrayNode* arrayNode, Environment* env);
+        Object* evalHashLiteral(HashNode* hashNode, Environment* env);
+        Object* evalUnaryExpression(UnaryNode* unaryNode, Environment* env);
+        Object* evalBinaryExpression(BinOpNode* binOpNode, Environment* env);
+        Object* evalLogicalExpression(BinOpNode* binOpNode, Environment* env);
+        static Object* evalBinaryString(Object* leftObj, TokenType type, Object* rightObj);
+        static Object* evalBinaryInteger(Object* leftObj, TokenType type, Object* rightObj);
+        static Object* evalBinaryBoolean(Object* leftObj, TokenType type, Object* rightObj);
+        Object* evalIfExpression(IfNode* ifNode, Environment* env);
     };
 }
 #endif //CPP_EVALUATOR_H

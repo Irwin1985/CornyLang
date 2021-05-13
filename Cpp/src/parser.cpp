@@ -117,7 +117,7 @@ namespace corny {
     // parseComparison ::= parseTerm (('<'|'<='|'>'|'>=') parseTerm)*
     Node* Parser::parseComparison() {
         Node* node = parseTerm();
-        while (curToken.type == TT_LET || curToken.type == TT_LESS_EQ ||
+        while (curToken.type == TT_LESS || curToken.type == TT_LESS_EQ ||
         curToken.type == TT_GREATER || curToken.type == TT_GREATER_EQ)
         {
             Token token = curToken;

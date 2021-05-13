@@ -6,6 +6,7 @@
 #define CPP_OBJECT_H
 #include <iostream>
 #include <vector>
+#include <map>
 #include "environment.h"
 #include "ast.h"
 
@@ -21,16 +22,16 @@ namespace corny {
         OBJ_HASH,
         OBJ_RETURN,
     };
-    // ObjBase class where all system objects inherit from.
-    class ObjBase {
+    // Object class where all system objects inherit from.
+    class Object {
     public:
-        ObjBase() {}
-        ~ObjBase() {}
+        Object() {}
+        ~Object() {}
         ObjType type;
         virtual std::string Inspect() = 0;
     };
     // ErrorObj
-    class ErrorObj : public ObjBase {
+    class ErrorObj : public Object {
     public:
         ErrorObj(std::string message) {
             this->message = message;
@@ -43,24 +44,24 @@ namespace corny {
         }
     };
     // ReturnObj
-    class ReturnObj : public ObjBase {
+    class ReturnObj : public Object {
     public:
         ReturnObj() {
             this->type = OBJ_RETURN;
         }
-        ReturnObj(ObjBase* value) {
+        ReturnObj(Object* value) {
             this->value = value;
             this->type = OBJ_RETURN;
         }
 
-        ObjBase* value;
+        Object* value;
         // inspect
         std::string Inspect() {
             return value->Inspect();
         }
     };
     // FunctionObj
-    class FunctionObj : public ObjBase {
+    class FunctionObj : public Object {
     public:
         FunctionObj() {
             this->type = OBJ_FUNCTION;
@@ -74,31 +75,30 @@ namespace corny {
         }
     };
     // ArrayObj
-    class ArrayObj : public ObjBase {
+    class ArrayObj : public Object {
     public:
         ArrayObj() {
             this->type = OBJ_ARRAY;
         }
-        std::vector<ObjBase*> elements;
+        std::vector<Object*> elements;
         std::string Inspect() {
             return "array";
         }
     };
     // HashObj
-    class HashObj : public ObjBase {
+    class HashObj : public Object {
     public:
         HashObj() {
             this->type = OBJ_HASH;
         }
-        std::vector<ObjBase*> keys;
-        std::vector<ObjBase*> values;
+        std::map<std::string, Object*> elements;
 
         std::string Inspect() {
             return "hash";
         }
     };
     // NumberObj
-    class NumberObj : public ObjBase {
+    class NumberObj : public Object {
     public:
         NumberObj() {
             this->type = OBJ_NUMBER;
@@ -113,7 +113,7 @@ namespace corny {
         }
     };
     // BooleanObj
-    class BooleanObj : public ObjBase {
+    class BooleanObj : public Object {
     public:
         BooleanObj() {
             this->type = OBJ_BOOLEAN;
@@ -128,7 +128,7 @@ namespace corny {
         }
     };
     // NullObj
-    class NullObj : public ObjBase {
+    class NullObj : public Object {
     public:
         NullObj() {
             this->type = OBJ_NULL;
@@ -138,7 +138,7 @@ namespace corny {
         }
     };
     // StringObj
-    class StringObj : public ObjBase {
+    class StringObj : public Object {
     public:
         StringObj() {
             this->type = OBJ_STRING;

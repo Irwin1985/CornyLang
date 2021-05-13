@@ -13,6 +13,9 @@ namespace corny {
         {"return", TT_RETURN},
         {"if", TT_IF},
         {"else", TT_ELSE},
+        {"null", TT_NULL},
+        {"and", TT_AND},
+        {"or", TT_OR},
     });
     // isKeyword: check if 'ident' is a keyword or a ident token.
     TokenType isKeyword(std::string ident) {
