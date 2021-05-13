@@ -9,6 +9,7 @@
 
 namespace corny {
     class Parser {
+    public:
         Parser(Lexer lexer) {
             this->lexer = lexer;
             nextToken();

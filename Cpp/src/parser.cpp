@@ -5,7 +5,10 @@
 
 namespace corny {
     void Parser::advance(TokenType type) {
-        if (curToken.type == type) nextToken();
+        if (curToken.type == type){
+            nextToken();
+            return;
+        }
         std::cout << "Lexer Error: Unexpected token. Got: " << curToken.type << ", want: " << type << std::endl;
     }
     void Parser::nextToken() {
@@ -30,7 +33,7 @@ namespace corny {
         while (curToken.type != TT_RBRACE) {
             blockNode->statements.emplace_back(parseStatement());
         }
-        advance(TT_LBRACE);
+        advance(TT_RBRACE);
 
         return blockNode;
     }
@@ -58,7 +61,8 @@ namespace corny {
 
         advance(TT_LET);
 
-        letNode->ident = parseIdentifier();
+        letNode->ident = (IdentNode*)parseIdentifier();
+        advance(TT_ASSIGN);
         letNode->value = parseExpression();
 
         return letNode;
@@ -142,9 +146,8 @@ namespace corny {
         }
         return node;
     }
-    // parseUnary ::= parsePrimary (('-'|'!') parsePrimary)* | parseCall
+    // parseUnary ::= ('-'|'!') parseUnary | parseCall
     Node* Parser::parseUnary() {
-        Node* node = parsePrimary();
         while (curToken.type == TT_MINUS || curToken.type == TT_NOT) {
             Token token = curToken;
             advance(token.type);
@@ -184,6 +187,8 @@ namespace corny {
             case TT_NULL:
                 advance(TT_NULL);
                 return new NullNode();
+            case TT_IDENT:
+                return parseIdentifier();
             case TT_LPAREN: {
                 advance(TT_LPAREN);
                 Node* resultExpr = parseExpression();
@@ -213,7 +218,7 @@ namespace corny {
 
         if (token.type == TT_LBRACKET) { // array or hash call
             advance(TT_LBRACKET);
-            if (curToken.type != TT_RBRACKET) {
+            if (curToken.type == TT_RBRACKET) {
                 std::cout << "Invalid subscript reference for array or hash types\n";
                 std::exit(1);
             }
@@ -250,16 +255,17 @@ namespace corny {
     // parseFunctionLiteral
     Node* Parser::parseFunctionLiteral() {
         FunctionNode *functionNode = new FunctionNode();
+        advance(TT_FUNCTION);
         advance(TT_LPAREN);
         if (curToken.type != TT_RPAREN) {
-            functionNode->parameters.emplace_back(parseIdentifier());
+            functionNode->parameters.emplace_back((IdentNode*)parseIdentifier());
             while (curToken.type == TT_COMMA) {
                 advance(TT_COMMA);
-                functionNode->parameters.emplace_back(parseIdentifier());
+                functionNode->parameters.emplace_back((IdentNode*)parseIdentifier());
             }
         }
         advance(TT_RPAREN);
-        functionNode->block = parseBlock();
+        functionNode->body = (BlockNode*)parseBlock();
 
         return functionNode;
     }
@@ -284,14 +290,14 @@ namespace corny {
         advance(TT_LBRACE);
         if (curToken.type != TT_RBRACE) {
             // parse key-value pair expressions
-            hashNode->keys.emplace_back(parseExpression());
+            hashNode->keys.emplace_back((IdentNode*)parseExpression());
             advance(TT_COLON); // advance ':'
             hashNode->values.emplace_back(parseExpression());
 
             while (curToken.type == TT_COMMA) {
                 advance(TT_COMMA);
                 // parse key-value pair expressions (refactor here in the future)
-                hashNode->keys.emplace_back(parseExpression());
+                hashNode->keys.emplace_back((IdentNode*)parseExpression());
                 advance(TT_COLON); // advance ':'
                 hashNode->values.emplace_back(parseExpression());
             }

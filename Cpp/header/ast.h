@@ -6,6 +6,7 @@
 #define CPP_AST_H
 #include <iostream>
 #include <vector>
+#include "token.h"
 
 namespace corny {
     // NodeType
@@ -41,6 +42,13 @@ namespace corny {
         ProgramNode() {
             this->type = NT_PROGRAM;
         }
+        ~ProgramNode() {
+            if (statements.size() > 0) {
+                for (auto statement : statements) {
+                    delete statement;
+                }
+            }
+        }
         std::vector<Node*> statements;
 
         std::string toString() {
@@ -61,25 +69,14 @@ namespace corny {
         }
         std::vector<Node*> statements;
         std::string toString() {
-            std::string result;
+            std::string result = "\n{\n";
             if (statements.size() > 0) {
                 for (Node* statement : statements) {
-                    result += statement->toString() + '\n';
+                    result += "   " + statement->toString() + ";\n";
                 }
             }
+            result += "}";
             return result;
-        }
-    };
-    // LetNode
-    class LetNode : public Node {
-    public:
-        LetNode() {
-            this->type = NT_LET;
-        }
-        Node* ident;
-        Node* value;
-        std::string toString() {
-            return "let " + ident->toString() + " = " + value->toString();
         }
     };
     // ReturnNode
@@ -94,7 +91,7 @@ namespace corny {
         }
         Node* value;
         std::string toString() {
-            return value->toString();
+            return "return " + value->toString();
         }
     };
     // BinaryNode
@@ -143,11 +140,24 @@ namespace corny {
         std::vector<Node*> arguments;
 
         std::string toString() {
-            std::string result;
+            std::string result = callee->toString();
             if (arguments.size() > 0) {
-                for (Node* argument : arguments) {
-                    result += argument->toString() + '\n';
+                std::string openDelim, closeDelim;
+                if (callee->type == NT_ARRAY || callee->type == NT_HASH) {
+                    openDelim = "[";
+                    closeDelim = "]";
+                } else {
+                    openDelim = "(";
+                    closeDelim = ")";
                 }
+                result += openDelim;
+                int counter = 0;
+                for (Node* argument : arguments) {
+                    counter += 1;
+                    if (counter > 1) result += ',';
+                    result += argument->toString();
+                }
+                result += closeDelim;
             }
             return result;
         }
@@ -162,83 +172,16 @@ namespace corny {
         Node* consequence;
         Node* alternative;
         std::string toString() {
-            std::string result = "if (";
-            result += condition->toString() + "){\n";
+            std::string result = "if(";
+            result += condition->toString() + ")";
             // evaluate consequence
             if (consequence != nullptr) {
                 result += consequence->toString();
             }
             // evaluate alternative
             if (alternative != nullptr) {
-                result += "\n}else{\n" + alternative->toString();
+                result += "else" + alternative->toString();
             }
-            result += "\n}";
-
-            return result;
-        }
-    };
-    // FunctionNode
-    class FunctionNode : public Node {
-    public:
-        FunctionNode() {
-            this->type = NT_FUNCTION;
-        }
-        std::vector<Node*> parameters;
-        Node* block;
-
-        std::string toString() {
-            std::string result = "fn(";
-            if (parameters.size() > 0) {
-                int counter = 0;
-                for (Node* parameter : parameters) {
-                    counter += 1;
-                    if (counter > 1) result += ",";
-                    result += parameter->toString();
-                }
-            }
-            result += ")\n{" + block->toString() + "\n}";
-
-            return result;
-        }
-    };
-    // ArrayNode
-    class ArrayNode : public Node {
-    public:
-        ArrayNode() {
-            this->type = NT_ARRAY;
-        }
-        std::vector<Node*> elements;
-        std::string toString() {
-            std::string result;
-            if (elements.size() > 0) {
-                int counter = 0;
-                for (Node* element : elements) {
-                    counter += 1;
-                    if (counter > 1) result += ",";
-                    result += element->toString();
-                }
-            }
-            return result;
-        }
-    };
-    // HashNode
-    class HashNode : public Node {
-    public:
-        HashNode() {
-            this->type = NT_HASH;
-        }
-        std::vector<Node*> keys;
-        std::vector<Node*> values;
-
-        std::string toString() {
-            std::string result = "{";
-            if (keys.size() > 0) {
-                for (int i = 0; i < keys.size(); i++) {
-                    if (i > 1) result += ",";
-                    result += keys.at(i)->toString() + ":" + values.at(i)->toString();
-                }
-            }
-            result += "}";
 
             return result;
         }
@@ -270,7 +213,7 @@ namespace corny {
         }
         std::string value;
         std::string toString() {
-            return value;
+            return '\"' + value + '\"';
         }
     };
     // BooleanNode
@@ -312,6 +255,86 @@ namespace corny {
         };
         std::string toString() {
             return "null";
+        }
+    };
+    // LetNode
+    class LetNode : public Node {
+    public:
+        LetNode() {
+            this->type = NT_LET;
+        }
+        IdentNode* ident;
+        Node* value;
+        std::string toString() {
+            return "let " + ident->toString() + " = " + value->toString();
+        }
+    };
+    // FunctionNode
+    class FunctionNode : public Node {
+    public:
+        FunctionNode() {
+            this->type = NT_FUNCTION;
+        }
+        std::vector<IdentNode*> parameters;
+        BlockNode* body;
+
+        std::string toString() {
+            std::string result = "fn(";
+            if (parameters.size() > 0) {
+                int counter = 0;
+                for (auto parameter : parameters) {
+                    counter += 1;
+                    if (counter > 1) result += ",";
+                    result += parameter->toString();
+                }
+            }
+            result += ")" + body->toString();
+
+            return result;
+        }
+    };
+    // ArrayNode
+    class ArrayNode : public Node {
+    public:
+        ArrayNode() {
+            this->type = NT_ARRAY;
+        }
+        std::vector<Node*> elements;
+
+        std::string toString() {
+            std::string result = "[";
+            if (elements.size() > 0) {
+                int counter = 0;
+                for (Node* element : elements) {
+                    counter += 1;
+                    if (counter > 1) result += ",";
+                    result += element->toString();
+                }
+            }
+            result += "]";
+            return result;
+        }
+    };
+    // HashNode
+    class HashNode : public Node {
+    public:
+        HashNode() {
+            this->type = NT_HASH;
+        }
+        std::vector<IdentNode*> keys;
+        std::vector<Node*> values;
+
+        std::string toString() {
+            std::string result = "{";
+            if (keys.size() > 0) {
+                for (int i = 0; i < keys.size(); i++) {
+                    if (i >= 1) result += ",";
+                    result += keys.at(i)->toString() + ":" + values.at(i)->toString();
+                }
+            }
+            result += "}";
+
+            return result;
         }
     };
 }
