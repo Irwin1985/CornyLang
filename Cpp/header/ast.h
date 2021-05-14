@@ -43,10 +43,8 @@ namespace corny {
             this->type = NT_PROGRAM;
         }
         ~ProgramNode() {
-            if (statements.size() > 0) {
-                for (auto statement : statements) {
-                    delete statement;
-                }
+            for (auto statement : statements) {
+                delete statement;
             }
         }
         std::vector<Node*> statements;
@@ -66,6 +64,11 @@ namespace corny {
     public:
         BlockNode() {
             this->type = NT_BLOCK;
+        }
+        ~BlockNode() {
+            for (auto stmt : statements) {
+                delete stmt;
+            }
         }
         std::vector<Node*> statements;
         std::string toString() {
@@ -89,6 +92,9 @@ namespace corny {
             this->value = value;
             this->type = NT_RETURN;
         }
+        ~ReturnNode() {
+            delete value;
+        }
         Node* value;
         std::string toString() {
             return "return " + value->toString();
@@ -99,6 +105,10 @@ namespace corny {
     public:
         BinOpNode() {
             this->type = NT_BINARY;
+        }
+        ~BinOpNode() {
+            delete left;
+            delete right;
         }
         BinOpNode(Node* left, Token opToken, Node* right) {
             this->left = left;
@@ -124,6 +134,9 @@ namespace corny {
             this->opToken = opToken;
             this->type = NT_UNARY;
         }
+        ~UnaryNode() {
+            delete left;
+        }
         Node* left;
         Token opToken;
         std::string toString() {
@@ -135,6 +148,12 @@ namespace corny {
     public:
         CallExprNode() {
             this->type = NT_CALL;
+        }
+        ~CallExprNode() {
+            delete callee;
+            for (auto argument : arguments) {
+                delete argument;
+            }
         }
         Node* callee;
         std::vector<Node*> arguments;
@@ -167,6 +186,11 @@ namespace corny {
     public:
         IfNode() {
             this->type = NT_IF;
+        }
+        ~IfNode() {
+            delete condition;
+            delete consequence;
+            delete alternative;
         }
         Node* condition;
         Node* consequence;
@@ -263,6 +287,10 @@ namespace corny {
         LetNode() {
             this->type = NT_LET;
         }
+        ~LetNode() {
+            delete ident;
+            delete value;
+        }
         IdentNode* ident;
         Node* value;
         std::string toString() {
@@ -274,6 +302,12 @@ namespace corny {
     public:
         FunctionNode() {
             this->type = NT_FUNCTION;
+        }
+        ~FunctionNode() {
+            for (auto param : parameters) {
+                delete param;
+            }
+            delete body;
         }
         std::vector<IdentNode*> parameters;
         BlockNode* body;
@@ -299,6 +333,11 @@ namespace corny {
         ArrayNode() {
             this->type = NT_ARRAY;
         }
+        ~ArrayNode() {
+            for (auto element : elements) {
+                delete element;
+            }
+        }
         std::vector<Node*> elements;
 
         std::string toString() {
@@ -320,6 +359,14 @@ namespace corny {
     public:
         HashNode() {
             this->type = NT_HASH;
+        }
+        ~HashNode() {
+            for (auto key : keys) {
+                delete key;
+            }
+            for (auto value : values) {
+                delete value;
+            }
         }
         std::vector<IdentNode*> keys;
         std::vector<Node*> values;

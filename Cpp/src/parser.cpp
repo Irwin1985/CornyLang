@@ -4,6 +4,13 @@
 #include "../header/parser.h"
 
 namespace corny {
+    // start
+    void Parser::start(Lexer lexer) {
+        this->lexer = lexer;
+        nextToken();
+        nextToken();
+    }
+    // advance
     void Parser::advance(TokenType type) {
         if (curToken.type == type){
             nextToken();
@@ -11,6 +18,7 @@ namespace corny {
         }
         std::cout << "Lexer Error: Unexpected token. Got: " << curToken.type << ", want: " << type << std::endl;
     }
+    // nextToken
     void Parser::nextToken() {
         curToken = peekToken;
         peekToken = lexer.nextToken();

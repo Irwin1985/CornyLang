@@ -8,12 +8,14 @@
 #include "object.h"
 #include "ast.h"
 #include "environment.h"
+#include "gc.h"
 
 namespace corny {
     class Evaluator {
     public:
         Evaluator() {}
         ~Evaluator() {}
+
         BooleanObj *TRUE = new BooleanObj(true);
         BooleanObj *FALSE = new BooleanObj(false);
         NullObj *NIL = new NullObj();
@@ -36,10 +38,15 @@ namespace corny {
         Object* evalUnaryExpression(UnaryNode* unaryNode, Environment* env);
         Object* evalBinaryExpression(BinOpNode* binOpNode, Environment* env);
         Object* evalLogicalExpression(BinOpNode* binOpNode, Environment* env);
-        static Object* evalBinaryString(Object* leftObj, TokenType type, Object* rightObj);
-        static Object* evalBinaryInteger(Object* leftObj, TokenType type, Object* rightObj);
-        static Object* evalBinaryBoolean(Object* leftObj, TokenType type, Object* rightObj);
+        Object* evalBinaryString(Object* leftObj, TokenType type, Object* rightObj);
+        Object* evalBinaryInteger(Object* leftObj, TokenType type, Object* rightObj);
+        Object* evalBinaryBoolean(Object* leftObj, TokenType type, Object* rightObj);
         Object* evalIfExpression(IfNode* ifNode, Environment* env);
+        Object* evalStatements(std::vector<Node*> statements, Environment* env);
+
+        GarbageCollector gc;
+        int gcCounter = 0;
+        int gcMaxObjects = 100;
     };
 }
 #endif //CPP_EVALUATOR_H

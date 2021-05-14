@@ -25,9 +25,14 @@ namespace corny {
     // Object class where all system objects inherit from.
     class Object {
     public:
-        Object() {}
+        Object() {
+            this->next = nullptr;
+            this->mark = false;
+        }
         ~Object() {}
         ObjType type;
+        Object* next;
+        bool mark;
         virtual std::string Inspect() = 0;
     };
     // ErrorObj
@@ -66,6 +71,12 @@ namespace corny {
         FunctionObj() {
             this->type = OBJ_FUNCTION;
         }
+        ~FunctionObj() {
+            for (auto parameter : parameters) {
+                delete parameter;
+            }
+            delete body;
+        }
         std::vector<IdentNode*> parameters;
         BlockNode* body;
         Environment *env;
@@ -80,6 +91,11 @@ namespace corny {
         ArrayObj() {
             this->type = OBJ_ARRAY;
         }
+        ~ArrayObj() {
+            for (auto element : elements) {
+                delete element;
+            }
+        }
         std::vector<Object*> elements;
         std::string Inspect() {
             return "array";
@@ -90,6 +106,12 @@ namespace corny {
     public:
         HashObj() {
             this->type = OBJ_HASH;
+        }
+        ~HashObj() {
+            for (auto it = elements.begin(); it != elements.end();) {
+                delete it->second;
+                it = elements.erase(it);
+            }
         }
         std::map<std::string, Object*> elements;
 

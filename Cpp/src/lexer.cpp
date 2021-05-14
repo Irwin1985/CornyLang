@@ -5,6 +5,12 @@
 #include "../header/lexer.h"
 
 namespace corny {
+    // start
+    void Lexer::start(std::string input) {
+        this->input = input;
+        this->pos = 0;
+        this->current_char = input[pos]; // move to the first character.
+    }
     // checkEOF
     void Lexer::checkEOF() {
         if (current_char == NONE) {

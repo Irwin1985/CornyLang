@@ -15,6 +15,9 @@ namespace corny {
         Environment(Environment* outer) {
             this->outer = outer;
         }
+        ~Environment() {
+            delete outer;
+        }
         Environment* outer = nullptr;
         std::map<std::string, Object*> symbolTable;
         // register an object in symbol table.

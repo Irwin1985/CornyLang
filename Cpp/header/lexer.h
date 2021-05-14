@@ -12,11 +12,6 @@ namespace corny {
     class Lexer {
     public:
         Lexer() {};
-        Lexer(std::string input) {
-            this->input = input;
-            this->pos = 0;
-            this->current_char = input[pos]; // move to the first character.
-        };
         ~Lexer() {};
 
         std::string input;
@@ -24,6 +19,7 @@ namespace corny {
         char current_char = '\0';
 
         // methods prototype
+        void start(std::string input);
         static bool isDigit(char chr);
         static bool isAlpha(char chr);
         static bool isLetter(char chr);

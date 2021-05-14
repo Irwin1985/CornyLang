@@ -8,6 +8,32 @@ namespace corny {
     bool Evaluator::isError(Object *obj) {
         return obj != nullptr && obj->type == OBJ_ERROR;
     }
+    // evalStatements
+    Object* Evaluator::evalStatements(std::vector<Node*> statements, Environment *env) {
+        Object* resultObj;
+        for (auto statement : statements) {
+            resultObj = eval(statement, env);
+            gc.mark(resultObj); // set the mark to true.
+            // if it is a OBJ_RETURN then mark the value
+            if (resultObj->type == OBJ_RETURN) {
+                gc.mark(((ReturnObj*)resultObj)->value);
+            }
+            // now increase the gcCounter
+            gcCounter += 1;
+            // check for the limit and sweep
+            if (gcCounter == gcMaxObjects) {
+                gc.mark(env); // mark the symbol table.
+                gc.sweep(); // start sweeping all objects.
+                gcCounter = 0; // restart the objects counter.
+            }
+
+            if (resultObj->type == OBJ_RETURN || resultObj->type == OBJ_ERROR) {
+                return resultObj;
+            }
+        }
+
+        return resultObj;
+    }
     // recursively evaluates the current node.
     Object* Evaluator::eval(Node *node, Environment *env) {
         NodeType type = node->type;
@@ -19,7 +45,11 @@ namespace corny {
             case NT_BOOLEAN:
                 return (((BooleanNode*)node)->value) ? TRUE : FALSE;
             case NT_NUMBER:
-                return new NumberObj(((NumberNode*)node)->value);
+            {
+                NumberObj* numberObj = new NumberObj(((NumberNode*)node)->value);
+                gc.add(numberObj);
+                return numberObj;
+            }
             case NT_NULL:
                 return NIL;
             case NT_UNARY:
@@ -27,7 +57,11 @@ namespace corny {
             case NT_BINARY:
                 return evalBinaryExpression((BinOpNode*)node, env);
             case NT_STRING:
-                return new StringObj(((StringNode*)node)->value);
+            {
+                StringObj* stringObj = new StringObj(((StringNode*)node)->value);
+                gc.add(stringObj);
+                return stringObj;
+            }
             case NT_LET:
                 return evalLet((LetNode*)node, env);
             case NT_RETURN:
@@ -36,6 +70,8 @@ namespace corny {
                 return evalIdentifier((IdentNode*)node, env);
             case NT_ARRAY:
                 return evalArrayLiteral((ArrayNode*)node, env);
+            case NT_HASH:
+                return evalHashLiteral((HashNode*)node, env);
             case NT_CALL:
                 return evalCallExpr((CallExprNode*)node, env);
             case NT_FUNCTION:
@@ -48,29 +84,16 @@ namespace corny {
     }
     // evalProgram
     Object* Evaluator::evalProgram(ProgramNode *programNode, Environment *env) {
-        Object* resultObj;
-        for (auto statement : programNode->statements) {
-            resultObj = eval(statement, env);
-            if (isError(resultObj)) {
-                return resultObj;
-            }
-            else if (resultObj->type == OBJ_RETURN) {
-                return ((ReturnObj*)resultObj)->value;
-            }
+        Object* resultObj = evalStatements(programNode->statements, env);
+        // unwrap the return value
+        if (resultObj->type == OBJ_RETURN) {
+            return ((ReturnObj*)resultObj)->value;
         }
-
         return resultObj;
     }
     // evalBlock
     Object* Evaluator::evalBlock(BlockNode *blockNode, Environment *env) {
-        Object* resultObj;
-        for (auto statement : blockNode->statements) {
-            resultObj = eval(statement, env);
-
-            if (isError(resultObj) || resultObj->type == OBJ_RETURN)
-                return resultObj;
-        }
-        return resultObj;
+        return evalStatements(blockNode->statements, env);
     }
     // evalLet
     Object* Evaluator::evalLet(LetNode *letNode, Environment *env) {
@@ -107,19 +130,24 @@ namespace corny {
     }
     // evalUnaryExpression
     Object* Evaluator::evalUnaryExpression(UnaryNode *unaryNode, Environment *env) {
+        Object* resultObj;
         Object* rightObj = eval(unaryNode->left, env);
         if (isError(rightObj)) return rightObj;
         // check the token operator
         switch (unaryNode->opToken.type) {
             case TT_MINUS:
                 if (rightObj->type != OBJ_NUMBER) return new ErrorObj("Invalid data type");
-                return new NumberObj(((NumberObj*)rightObj)->value * -1);
+                resultObj = new NumberObj(((NumberObj*)rightObj)->value * -1);
+                break;
             case TT_NOT:
                 if (rightObj->type != OBJ_BOOLEAN) return new ErrorObj("Invalid data type");
-                return (((BooleanObj*)rightObj)->value == true) ? FALSE : TRUE;
+                resultObj = (((BooleanObj*)rightObj)->value == true) ? FALSE : TRUE;
+                break;
             default:
                 return new ErrorObj("Invalid operator: " + unaryNode->opToken.literal);
         }
+        gc.add(resultObj);
+        return resultObj;
     }
     // evalBinaryExpression
     Object* Evaluator::evalBinaryExpression(BinOpNode *binOpNode, Environment *env) {
@@ -141,7 +169,6 @@ namespace corny {
         if (leftObj->type == OBJ_BOOLEAN && rightObj->type == OBJ_NUMBER) {
             return evalBinaryBoolean(leftObj, binOpNode->opToken.type, rightObj);
         }
-        return new ErrorObj("Operator not supported: " + binOpNode->opToken.literal);
     }
     // evalLogicalExpression
     Object* Evaluator::evalLogicalExpression(BinOpNode *binOpNode, Environment *env) {
@@ -169,47 +196,58 @@ namespace corny {
 
             return (((BooleanObj*)leftObj)->value == true) ? TRUE : FALSE;
         }
-        return new ErrorObj("Operator not supported: " + binOpNode->opToken.literal);
+        return new ErrorObj("Invalid operator for logical operation: " + binOpNode->opToken.literal);
     }
     // evalBinaryString
     Object* Evaluator::evalBinaryString(Object* leftObj, TokenType type, Object* rightObj) {
+        Object* resultObj;
         switch (type) {
             case TT_PLUS:
-                return new StringObj(((StringObj*)leftObj)->value + ((StringObj*)rightObj)->value);
+                resultObj = new StringObj(((StringObj*)leftObj)->value + ((StringObj*)rightObj)->value);
+                break;
             default:
                 return new ErrorObj("Invalid operator");
         }
+        gc.add(resultObj);
+        return resultObj;
     }
     // evalBinaryInteger
     Object* Evaluator::evalBinaryInteger(Object* leftObj, TokenType type, Object* rightObj) {
+        Object* resultObj;
         switch (type) {
             case TT_PLUS:
-                return new NumberObj(((NumberObj*)leftObj)->value + ((NumberObj*)rightObj)->value);
+                resultObj = new NumberObj(((NumberObj*)leftObj)->value + ((NumberObj*)rightObj)->value);
+                break;
             case TT_MINUS:
-                return new NumberObj(((NumberObj*)leftObj)->value - ((NumberObj*)rightObj)->value);
+                resultObj = new NumberObj(((NumberObj*)leftObj)->value - ((NumberObj*)rightObj)->value);
+                break;
             case TT_MUL:
-                return new NumberObj(((NumberObj*)leftObj)->value * ((NumberObj*)rightObj)->value);
+                resultObj = new NumberObj(((NumberObj*)leftObj)->value * ((NumberObj*)rightObj)->value);
+                break;
             case TT_DIV:
             {
                 double rightVal = ((NumberObj*)rightObj)->value;
                 if (rightVal <= 0) return new ErrorObj("Division by zero.");
-                return new NumberObj(((NumberObj*)leftObj)->value / rightVal);
+                resultObj = new NumberObj(((NumberObj*)leftObj)->value / rightVal);
+                break;
             }
             case TT_LESS:
-                return new BooleanObj(((NumberObj*)leftObj)->value < ((NumberObj*)rightObj)->value);
+                return (((NumberObj*)leftObj)->value < ((NumberObj*)rightObj)->value) ? TRUE : FALSE;
             case TT_GREATER:
-                return new BooleanObj(((NumberObj*)leftObj)->value > ((NumberObj*)rightObj)->value);
+                return (((NumberObj*)leftObj)->value > ((NumberObj*)rightObj)->value) ? TRUE : FALSE;
             case TT_LESS_EQ:
-                return new BooleanObj(((NumberObj*)leftObj)->value <= ((NumberObj*)rightObj)->value);
+                return (((NumberObj*)leftObj)->value <= ((NumberObj*)rightObj)->value) ? TRUE : FALSE;
             case TT_GREATER_EQ:
-                return new BooleanObj(((NumberObj*)leftObj)->value >= ((NumberObj*)rightObj)->value);
+                return (((NumberObj*)leftObj)->value >= ((NumberObj*)rightObj)->value) ? TRUE : FALSE;
             case TT_EQUAL:
-                return new BooleanObj(((NumberObj*)leftObj)->value == ((NumberObj*)rightObj)->value);
+                return (((NumberObj*)leftObj)->value == ((NumberObj*)rightObj)->value) ? TRUE : FALSE;
             case TT_NOT_EQ:
-                return new BooleanObj(((NumberObj*)leftObj)->value != ((NumberObj*)rightObj)->value);
+                return (((NumberObj*)leftObj)->value != ((NumberObj*)rightObj)->value) ? TRUE : FALSE;
             default:
                 return new ErrorObj("Invalid operator.");
         }
+        gc.add(resultObj); // add in GC
+        return resultObj;
     }
     // evalBinaryBoolean
     Object* Evaluator::evalBinaryBoolean(Object* leftObj, TokenType type, Object* rightObj) {
@@ -265,7 +303,7 @@ namespace corny {
         functionObj->env = env;
         functionObj->parameters = functionNode->parameters;
         functionObj->body = functionNode->body;
-
+        gc.add(functionObj); // add in garbage collector
         return functionObj;
     }
     // evalArrayLiteral
@@ -281,15 +319,17 @@ namespace corny {
                 arrayObj->elements.emplace_back(resultObj);
             }
         }
+        gc.add(arrayObj);
         return arrayObj;
     }
     // evalHashLiteral
     Object* Evaluator::evalHashLiteral(HashNode *hashNode, Environment *env) {
         HashObj* hashObj = new HashObj();
-        int index = 0;
+        int index = -1;
         Object* keyObj, *valueObj;
         // loop through keys and their values
         for (auto keyNode : hashNode->keys) {
+            index += 1;
             keyObj = eval(keyNode, env);
             if (isError(keyObj)) return keyObj;
             // validate the OBJ_STRING data type
@@ -300,6 +340,7 @@ namespace corny {
             // save the key-value in data type
             hashObj->elements[((StringObj*)keyObj)->value] = valueObj;
         }
+        gc.add(hashObj);
         return hashObj;
     }
     // evalFunction
@@ -331,19 +372,21 @@ namespace corny {
         if (indexObj->type != OBJ_NUMBER) return new ErrorObj("Invalid subscript reference");
         // check for out of bounds
         int index = ((NumberObj*)indexObj)->value;
-        if (index <= 0 || index >= arrayObj->elements.size()) {
+        if (index < 0 || index >= arrayObj->elements.size()) {
             return new ErrorObj("Index out of bounds");
         }
-        Object* valueObj = arrayObj->elements[index];
 
-        return valueObj;
+        return arrayObj->elements[index];
     }
     // evalHashAccess
     Object* Evaluator::evalHashAccess(HashObj *hashObj, std::vector<Object *> arguments) {
         Object* indexObj = arguments.at(0);
         if (indexObj->type != OBJ_STRING) return new ErrorObj("Invalid subscript reference");
-
-        return nullptr;
+        std::string key = ((StringObj*)indexObj)->value;
+        if (hashObj->elements.find(key) != hashObj->elements.end()) {
+            return hashObj->elements[key];
+        }
+        return NIL;
     }
     // stringAccess
     Object* Evaluator::evalStringAccess(StringObj *stringObj, std::vector<Object *> arguments) {
@@ -351,7 +394,7 @@ namespace corny {
         if (indexObj->type != OBJ_NUMBER) return new ErrorObj("Invalid subscript reference");
         int index = ((NumberObj*)indexObj)->value;
         // check for out of bounds
-        if (index <= 0 || index > stringObj->value.length()) {
+        if (index < 0 || index > stringObj->value.length()) {
             return new ErrorObj("Index out of bounds");
         }
 

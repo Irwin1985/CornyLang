@@ -10,15 +10,12 @@
 namespace corny {
     class Parser {
     public:
-        Parser(Lexer lexer) {
-            this->lexer = lexer;
-            nextToken();
-            nextToken();
-        }
+        Parser() {}
         Lexer lexer;
         Token curToken;
         Token peekToken;
         // methods
+        void start(Lexer lexer);
         void advance(TokenType type);
         void nextToken();
         Node* parseProgram();
