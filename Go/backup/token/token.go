@@ -18,7 +18,6 @@ var keywords = map[string]TokenType{
 	"return": TT_RETURN,
 	"if":     TT_IF,
 	"else":   TT_ELSE,
-	"class":  TT_CLASS,
 }
 
 func IsKeyword(key string) TokenType {
@@ -84,5 +83,4 @@ const (
 	TT_TRUE     = "TRUE"
 	TT_FALSE    = "FALSE"
 	TT_NULL     = "NULL"
-	TT_CLASS    = "CLASS"
 )

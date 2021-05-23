@@ -9,17 +9,17 @@ var builtins = map[string]*object.BuiltinObj{
 	"size": {
 		Func: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
-				return object.NewError(fmt.Sprintf("wrong number of arguments. got=%d, want=1", len(args)), object.GLOBAL_ERROR, "")
+				return object.NewError(fmt.Sprintf("wrong number of arguments. got=%d, want=1", len(args)))
 			}
 			switch arg := args[0].(type) {
 			case *object.StringObj:
-				return object.NewNumberObj(float64(len(arg.Value)))
+				return &object.NumberObj{Value: float64(len(arg.Value) - 1)}
 			case *object.ArrayObj:
-				return object.NewNumberObj(float64(len(arg.Elements)))
+				return &object.NumberObj{Value: float64(len(arg.Elements) - 1)}
 			case *object.HashObj:
-				return object.NewNumberObj(float64(len(arg.Elements)))
+				return &object.NumberObj{Value: float64(len(arg.Elements) - 1)}
 			default:
-				return object.NewError(fmt.Sprintf("wrong argument to `size` not supported, got=%s", args[0].Type()), object.GLOBAL_ERROR, "")
+				return object.NewError(fmt.Sprintf("wrong argument to `size` not supported, got=%s", args[0].Type()))
 			}
 		},
 		ExtraArgs: false,
@@ -27,25 +27,23 @@ var builtins = map[string]*object.BuiltinObj{
 	"type": {
 		Func: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
-				return object.NewError(fmt.Sprintf("wrong number of arguments. got=%d, want=1", len(args)), object.GLOBAL_ERROR, "")
+				return object.NewError(fmt.Sprintf("wrong number of arguments. got=%d, want=1", len(args)))
 			}
 			switch args[0].Type() {
 			case object.STRING_OBJ:
-				return object.NewStringObj("C")
+				return &object.StringObj{Value: "C"}
 			case object.NUMBER_OBJ:
-				return object.NewStringObj("N")
+				return &object.StringObj{Value: "N"}
 			case object.NULL_OBJ:
-				return object.NewStringObj("X")
+				return &object.StringObj{Value: "X"}
 			case object.FUNCTION_OBJ:
-				return object.NewStringObj("F")
+				return &object.StringObj{Value: "F"}
 			case object.ARRAY_OBJ:
-				return object.NewStringObj("A")
+				return &object.StringObj{Value: "A"}
 			case object.HASH_OBJ:
-				return object.NewStringObj("H")
-			case object.CLASS_OBJ:
-				return object.NewStringObj("O")
+				return &object.StringObj{Value: "H"}
 			default:
-				return object.NewStringObj("U")
+				return &object.StringObj{Value: "U"}
 			}
 		},
 		ExtraArgs: false,
@@ -73,7 +71,7 @@ var builtins = map[string]*object.BuiltinObj{
 
 				return newArrayObj
 			}
-			return object.NewError(fmt.Sprintf("wrong argument to `push` not supported, got=%s", args[0].Type()), object.GLOBAL_ERROR, "")
+			return object.NewError(fmt.Sprintf("wrong argument to `push` not supported, got=%s", args[0].Type()))
 		},
 		ExtraArgs: true,
 	},

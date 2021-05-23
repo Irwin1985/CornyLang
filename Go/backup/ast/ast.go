@@ -6,36 +6,12 @@ import (
 	"strings"
 )
 
-type NodeType string
-
-const (
-	NT_PROGRAM  = "PROGRAM"
-	NT_BLOCK    = "BLOCK"
-	NT_NUMBER   = "NUMBER"
-	NT_LET      = "LET"
-	NT_RETURN   = "RETURN"
-	NT_FUNCTION = "FUNCTION"
-	NT_ARRAY    = "ARRAY"
-	NT_HASH     = "HASH"
-	NT_CALL     = "CALL"
-	NT_IDENT    = "IDENT"
-	NT_BINARY   = "BINARY"
-	NT_UNARY    = "UNARY"
-	NT_STRING   = "STRING"
-	NT_BOOLEAN  = "BOOLEAN"
-	NT_NULL     = "NULL"
-	NT_IF       = "IF"
-	NT_EXPRSTMT = "EXPRSTMT"
-	NT_CLASS    = "CLASS"
-)
-
 /**
 * Node Interface
  */
 type Node interface {
 	TokenLiteral() string
 	String() string
-	Type() NodeType
 }
 
 /**
@@ -76,10 +52,6 @@ func (p *ProgramNode) String() string {
 	return out.String()
 }
 
-func (p *ProgramNode) Type() NodeType {
-	return NT_PROGRAM
-}
-
 /**
 * BlockStmtNode
  */
@@ -100,10 +72,6 @@ func (bs *BlockStmtNode) String() string {
 	}
 	out.WriteString("}")
 	return out.String()
-}
-
-func (bs *BlockStmtNode) Type() NodeType {
-	return NT_BLOCK
 }
 
 /**
@@ -130,10 +98,6 @@ func (bin *BinOpNode) String() string {
 	return out.String()
 }
 
-func (bin *BinOpNode) Type() NodeType {
-	return NT_BINARY
-}
-
 /**
 * UnaryNode
  */
@@ -156,10 +120,6 @@ func (un *UnaryNode) String() string {
 	return out.String()
 }
 
-func (un *UnaryNode) Type() NodeType {
-	return NT_UNARY
-}
-
 /**
 * NumberNode
  */
@@ -174,10 +134,6 @@ func (n *NumberNode) TokenLiteral() string {
 }
 func (n *NumberNode) String() string {
 	return n.Token.Literal
-}
-
-func (n *NumberNode) Type() NodeType {
-	return NT_NUMBER
 }
 
 /**
@@ -196,10 +152,6 @@ func (bn *BooleanNode) String() string {
 	return bn.Token.Literal
 }
 
-func (bn *BooleanNode) Type() NodeType {
-	return NT_BOOLEAN
-}
-
 /**
 * NullNode
  */
@@ -213,10 +165,6 @@ func (nn *NullNode) TokenLiteral() string {
 }
 func (nn *NullNode) String() string {
 	return nn.Token.Literal
-}
-
-func (nn *NullNode) Type() NodeType {
-	return NT_NULL
 }
 
 /**
@@ -235,10 +183,6 @@ func (sn *StringNode) String() string {
 	return string("\"" + sn.Token.Literal + "\"")
 }
 
-func (sn *StringNode) Type() NodeType {
-	return NT_STRING
-}
-
 /**
 * IdentifierNode
  */
@@ -248,17 +192,11 @@ type IdentifierNode struct {
 }
 
 func (in *IdentifierNode) expressionNode() {}
-
 func (in *IdentifierNode) TokenLiteral() string {
 	return in.Token.Literal
 }
-
 func (in *IdentifierNode) String() string {
 	return in.Value
-}
-
-func (in *IdentifierNode) Type() NodeType {
-	return NT_IDENT
 }
 
 /**
@@ -286,10 +224,6 @@ func (ln *LetNode) String() string {
 	return out.String()
 }
 
-func (ln *LetNode) Type() NodeType {
-	return NT_LET
-}
-
 /**
 * ExpressionStatement
  */
@@ -309,10 +243,6 @@ func (es *ExpressionStatement) String() string {
 		return es.Expression.String()
 	}
 	return ""
-}
-
-func (es *ExpressionStatement) Type() NodeType {
-	return NT_EXPRSTMT
 }
 
 /**
@@ -346,10 +276,6 @@ func (ce *CallExprNode) String() string {
 	return out.String()
 }
 
-func (ce *CallExprNode) Type() NodeType {
-	return NT_CALL
-}
-
 /**
 * IfExprNode
  */
@@ -381,10 +307,6 @@ func (fl *IfExprNode) String() string {
 	return out.String()
 }
 
-func (fl *IfExprNode) Type() NodeType {
-	return NT_IF
-}
-
 /**
 * ReturnNode
  */
@@ -404,9 +326,6 @@ func (rn *ReturnNode) String() string {
 	out.WriteString(rn.Value.String())
 
 	return out.String()
-}
-func (rn *ReturnNode) Type() NodeType {
-	return NT_RETURN
 }
 
 /**
@@ -437,32 +356,6 @@ func (fl *FunctionLiteralNode) String() string {
 	out.WriteString(fl.Body.String())
 	return out.String()
 }
-func (fl *FunctionLiteralNode) Type() NodeType {
-	return NT_FUNCTION
-}
-
-/**
-* ClassLiteralNode
- */
-type ClassLiteralNode struct {
-	Token token.Token
-	Body  *BlockStmtNode
-}
-
-func (cl *ClassLiteralNode) expressionNode() {}
-func (cl *ClassLiteralNode) TokenLiteral() string {
-	return cl.Token.Literal
-}
-
-func (cl *ClassLiteralNode) String() string {
-	var out bytes.Buffer
-	out.WriteString("class")
-	out.WriteString(cl.Body.String())
-	return out.String()
-}
-func (cl *ClassLiteralNode) Type() NodeType {
-	return NT_CLASS
-}
 
 /**
 * ArrayLiteralNode
@@ -491,9 +384,6 @@ func (al *ArrayLiteralNode) String() string {
 	out.WriteString("]")
 
 	return out.String()
-}
-func (al *ArrayLiteralNode) Type() NodeType {
-	return NT_ARRAY
 }
 
 /**
@@ -524,7 +414,4 @@ func (hl *HashLiteralNode) String() string {
 	out.WriteString("}")
 
 	return out.String()
-}
-func (hl *HashLiteralNode) Type() NodeType {
-	return NT_HASH
 }

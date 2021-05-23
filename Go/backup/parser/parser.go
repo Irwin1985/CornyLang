@@ -53,32 +53,14 @@ func (p *Parser) Program() *ast.ProgramNode {
 }
 
 // parseBlockStmt ::= LBRACE ( statement )* RBRACE
-func (p *Parser) parseBlockStmt(ownerType token.TokenType) *ast.BlockStmtNode {
+func (p *Parser) parseBlockStmt() *ast.BlockStmtNode {
 	var blockNode = &ast.BlockStmtNode{Token: p.curToken}
 
 	blockNode.Statements = []ast.Statement{}
+
 	p.advance(token.TT_LBRACE)
 	for p.curToken.Type != token.TT_RBRACE {
-		var stmtNode ast.Statement
-		if ownerType == token.TT_CLASS {
-			if p.curToken.Type == token.TT_IDENT && p.peekToken.Type == token.TT_ASSIGN {
-				stmtNode = p.parseLetStmt(true)
-			} else {
-				stmtNode = p.parseStatement()
-			}
-		} else {
-			stmtNode = p.parseStatement()
-		}
-		if stmtNode != nil {
-			if ownerType == token.TT_CLASS {
-				var nodeType = stmtNode.Type()
-				if nodeType != ast.NT_LET && nodeType != ast.NT_FUNCTION {
-					fmt.Print("Invalid statement inside class definition.\n")
-					os.Exit(4)
-				}
-			}
-			blockNode.Statements = append(blockNode.Statements, stmtNode)
-		}
+		blockNode.Statements = append(blockNode.Statements, p.parseStatement())
 	}
 	p.advance(token.TT_RBRACE)
 
@@ -92,20 +74,20 @@ func (p *Parser) parseBlockStmt(ownerType token.TokenType) *ast.BlockStmtNode {
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.TT_LET:
-		return p.parseLetStmt(false)
+		return p.parseLetStmt()
 	case token.TT_RETURN:
 		return p.parseReturnStmt()
 	default:
 		return p.parseExpressionStmt()
 	}
+
 }
 
 // parseLetStmt ::= let IDENTIFIER = parseExpression
-func (p *Parser) parseLetStmt(skipLetToken bool) ast.Statement {
+func (p *Parser) parseLetStmt() ast.Statement {
 	var letNode = &ast.LetNode{Token: p.curToken}
-	if !skipLetToken {
-		p.advance(token.TT_LET)
-	}
+
+	p.advance(token.TT_LET)
 	letNode.Name = p.parseIdentifier()
 
 	p.advance(token.TT_ASSIGN)
@@ -216,19 +198,7 @@ func (p *Parser) unary() ast.Expression {
 		p.advance(token.Type)
 		return &ast.UnaryNode{Operator: token, Right: p.unary()}
 	}
-	return p.dotCall()
-	//return p.call()
-}
-
-// dotCall
-func (p *Parser) dotCall() ast.Expression {
-	var node = p.call()
-	for p.curToken.Type == token.TT_DOT {
-		var tok = p.curToken
-		p.advance(token.TT_DOT)
-		node = &ast.BinOpNode{Left: node, Operator: tok, Right: p.call()}
-	}
-	return node
+	return p.call()
 }
 
 // call ::= primary '(' arguments? ')'
@@ -236,7 +206,8 @@ func (p *Parser) call() ast.Expression {
 	var node = p.primary()
 	for {
 		if p.curToken.Type == token.TT_LPAREN ||
-			p.curToken.Type == token.TT_LBRACKET {
+			p.curToken.Type == token.TT_LBRACKET ||
+			p.curToken.Type == token.TT_DOT {
 			node = p.parseCallExpr(node)
 		} else if p.curToken.Type == token.TT_QUESTION {
 			node = p.parseTernaryExpr(node)
@@ -276,8 +247,6 @@ func (p *Parser) primary() ast.Expression {
 		return &ast.StringNode{Token: tok, Value: tok.Literal}
 	case token.TT_FUNCTION:
 		return p.parseFunctionLiteral()
-	case token.TT_CLASS:
-		return p.parseClassLiteral()
 	case token.TT_LBRACKET:
 		return p.parseArrayLiteral()
 	case token.TT_LBRACE:
@@ -352,18 +321,9 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 		}
 	}
 	p.advance(token.TT_RPAREN)
-	functionNode.Body = p.parseBlockStmt(token.TT_FUNCTION)
+	functionNode.Body = p.parseBlockStmt()
 
 	return functionNode
-}
-
-// parseClassLiteral
-func (p *Parser) parseClassLiteral() ast.Expression {
-	var classNode = &ast.ClassLiteralNode{Token: p.curToken}
-	p.advance(token.TT_CLASS)
-	classNode.Body = p.parseBlockStmt(token.TT_CLASS)
-
-	return classNode
 }
 
 // parseIdentifier
@@ -431,11 +391,11 @@ func (p *Parser) parseIfExpr() *ast.IfExprNode {
 	ifNode.Condition = p.parseExpression()
 	p.advance(token.TT_RPAREN)
 
-	ifNode.Consequence = p.parseBlockStmt(token.TT_IF)
+	ifNode.Consequence = p.parseBlockStmt()
 
 	if p.curToken.Type == token.TT_ELSE {
 		p.advance(token.TT_ELSE)
-		ifNode.Alternative = p.parseBlockStmt(token.TT_IF)
+		ifNode.Alternative = p.parseBlockStmt()
 	}
 
 	return ifNode
